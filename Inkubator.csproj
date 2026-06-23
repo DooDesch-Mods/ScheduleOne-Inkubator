@@ -1,0 +1,147 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Inkubator - MelonLoader IL2CPP in-game 3D tattoo editor for Schedule I.
+    Registers as a singleplayer "gamemode" with Side Hustle. Launched from the main-menu hub, it runs as a
+    menu-space overlay that reuses the game's character rig: the player imports PNGs, places them on the
+    character, previews live, and exports a complete, ready-to-release Inkorporated tattoo mod. Custom tattoo
+    textures are previewed via the same S1API AvatarLayerFactory + RuntimeResourceRegistry path Inkorporated
+    uses. Cloned from the Inkorporated / Side Hustle template.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Inkubator</RootNamespace>
+    <AssemblyName>Inkubator</AssemblyName>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <!-- Copy PackageReference assemblies (ImageSharp) to the output so they can be deployed to UserLibs. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- ImageSharp 2.1.9 is Apache-2.0 (free for a public mod) and pure-managed (loads in MelonLoader's runtime).
+         Its advisories are server-side image-attack DoS/overflow issues; here the user loads their own tattoo
+         images locally, so the risk is negligible. Suppress the advisory build warnings. -->
+    <NoWarn>$(NoWarn);MSB3277;MSB3245;NU1903;NU1902</NoWarn>
+
+    <WorkspaceLibPath Condition="'$(WorkspaceLibPath)' == ''">$(MSBuildThisFileDirectory)../Workspace/lib</WorkspaceLibPath>
+    <ModsDirectory Condition="'$(ModsDirectory)' == ''">D:\Launcher\SteamLibrary\steamapps\common\Schedule I\Mods</ModsDirectory>
+    <UserLibsDirectory Condition="'$(UserLibsDirectory)' == ''">D:\Launcher\SteamLibrary\steamapps\common\Schedule I\UserLibs</UserLibsDirectory>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <Backend>il2cpp</Backend>
+    <DefineConstants>$(DefineConstants);IL2CPP</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GameManagedPath>$(WorkspaceLibPath)/$(Backend)/game</GameManagedPath>
+    <MelonLoaderPath>$(WorkspaceLibPath)/$(Backend)/melonloader</MelonLoaderPath>
+    <SideHustlePath>$(MSBuildThisFileDirectory)../SideHustle/bin/$(Configuration)/net6.0/SideHustle.dll</SideHustlePath>
+  </PropertyGroup>
+
+  <!-- Release: drop the DEBUG-only dev tooling (R1 feasibility spike) from the compile entirely. -->
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <Compile Remove="Dev/**" />
+  </ItemGroup>
+
+  <!-- Mod loader references -->
+  <ItemGroup>
+    <Reference Include="MelonLoader">
+      <HintPath>$(MelonLoaderPath)/MelonLoader.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(MelonLoaderPath)/0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(MelonLoaderPath)/Il2CppInterop.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(MelonLoaderPath)/Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Sibling Side Hustle hub (gamemode registration API) -->
+  <ItemGroup>
+    <Reference Include="SideHustle">
+      <HintPath>$(SideHustlePath)</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Game + IL2CPP references -->
+  <ItemGroup>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(GameManagedPath)/Il2Cppmscorlib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppSystem">
+      <HintPath>$(GameManagedPath)/Il2CppSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(GameManagedPath)/Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="S1API.Il2Cpp.MelonLoader">
+      <HintPath>$(WorkspaceLibPath)/il2cpp/s1api/S1API.Il2Cpp.MelonLoader.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GameManagedPath)/UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(GameManagedPath)/UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GameManagedPath)/Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.9" />
+  </ItemGroup>
+
+  <!-- Real (free-to-use, Lucide ISC) UI/cursor icons, rasterized to white PNG with a dark outline. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Assets/Icons/*.png" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="Build" Condition="'$(OS)' == 'Windows_NT'">
+    <Exec Condition="Exists('$(ModsDirectory)')" Command="cmd /c if exist &quot;$(ModsDirectory)&quot; copy /Y &quot;$(TargetPath)&quot; &quot;$(ModsDirectory)&quot;" ContinueOnError="true" />
+    <!-- Deploy the ImageSharp dependency to UserLibs so MelonLoader can resolve it at runtime. -->
+    <Exec Condition="Exists('$(UserLibsDirectory)') And Exists('$(TargetDir)SixLabors.ImageSharp.dll')"
+          Command="cmd /c copy /Y &quot;$(TargetDir)SixLabors.ImageSharp.dll&quot; &quot;$(UserLibsDirectory)&quot;" ContinueOnError="true" />
+  </Target>
+
+</Project>
