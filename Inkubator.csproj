@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Shared DooDesch.UI in-game design-system layer (tokens, button states, toasts/banners) - linked source. -->
-  <Import Project="$(MSBuildThisFileDirectory)../Workspace/build/DooDeschUI.props" />
+  <!-- Shared DooDesch.UI in-game design-system layer (tokens, button states, toasts/banners) - linked source.
+       Local: Workspace is a sibling (../Workspace). CI checks it out as a subfolder (./Workspace). Import whichever exists. -->
+  <Import Project="$(MSBuildThisFileDirectory)../Workspace/build/DooDeschUI.props" Condition="Exists('$(MSBuildThisFileDirectory)../Workspace/build/DooDeschUI.props')" />
+  <Import Project="$(MSBuildThisFileDirectory)Workspace/build/DooDeschUI.props" Condition="Exists('$(MSBuildThisFileDirectory)Workspace/build/DooDeschUI.props')" />
 
   <!--
     Inkubator - MelonLoader IL2CPP in-game 3D tattoo editor for Schedule I.
