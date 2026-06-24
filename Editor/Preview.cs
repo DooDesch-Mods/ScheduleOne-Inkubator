@@ -251,9 +251,15 @@ namespace Inkubator.Editor
         private static Transform _pivot;
         private static Transform _origParent;
         private static int _origSibling;
-        private static Camera _cam;
+        private static Camera _menuCam;
         private static Vector3 _origCamPos;
         private static bool _camCaptured;
+        private static float _baseDist;
+        private static float _focusHeight = 1.0f;   // dolly aim height above the avatar root: chest by default, higher for Face
+        private static int _zoomPercent = 100;
+
+        /// <summary>Camera zoom relative to the editor's starting distance (100 = default), for the canvas readout.</summary>
+        public static int ZoomPercent => _zoomPercent;
 
         // The menu avatar's idle animation resets its LOCAL rotation every frame, so rotating the avatar directly
         // snaps back. We insert a pivot parent (whose rotation the animation never touches) and rotate that.
@@ -280,20 +286,67 @@ namespace Inkubator.Editor
             catch (Exception e) { Core.Log?.Warning("[preview] rotate: " + e.Message); }
         }
 
-        /// <summary>Dolly the menu camera toward / away from the character (delta &gt; 0 = zoom in).</summary>
+        /// <summary>The single menu-scene camera. Camera.main is null here (the menu camera is Untagged), so find it
+        /// directly and cache it. Verified: moving this camera dollies the rig and the move persists (menu won't reset it).</summary>
+        private static Camera FindMenuCamera()
+        {
+            if (_menuCam != null) return _menuCam;
+            if (Camera.main != null) { _menuCam = Camera.main; return _menuCam; }
+            try
+            {
+                var cams = UnityEngine.Object.FindObjectsOfType<Camera>(false);
+                if (cams != null)
+                    foreach (var c in cams)
+                        if (c != null && c.enabled && c.gameObject.activeInHierarchy) { _menuCam = c; break; }
+            }
+            catch (Exception e) { Core.Log?.Warning("[preview] find camera: " + e.Message); }
+            return _menuCam;
+        }
+
+        private static void EnsureCamCaptured(Camera cam)
+        {
+            if (!_camCaptured && cam != null) { _origCamPos = cam.transform.position; _camCaptured = true; }
+        }
+
+        /// <summary>Aim the preview higher (Face) or at the chest (everything else), so the framing follows the selected
+        /// body part. Translates the camera by the focus delta so the current zoom/shot is kept, just re-centred.</summary>
+        public static void SetFocusPlacement(Placement placement)
+        {
+            float h = placement == Placement.Face ? 1.55f : 1.0f;
+            try
+            {
+                if (!EnsureAvatar()) { _focusHeight = h; return; }
+                var cam = FindMenuCamera();
+                if (cam != null)
+                {
+                    EnsureCamCaptured(cam);                                   // capture the rest position before any shift
+                    cam.transform.position += Vector3.up * (h - _focusHeight);
+                }
+                _focusHeight = h;
+            }
+            catch (Exception e) { Core.Log?.Warning("[preview] focus: " + e.Message); }
+        }
+
+        /// <summary>Dolly the menu camera toward / away from the character along its view line (delta &gt; 0 = zoom in).
+        /// 100% = the distance when the editor opened; clamped so it can't pass through or fly far off the rig.</summary>
         public static void ZoomCamera(float delta)
         {
             if (!EnsureAvatar()) return;
             try
             {
-                if (_cam == null) _cam = Camera.main;
-                if (_cam == null) return;
-                if (!_camCaptured) { _origCamPos = _cam.transform.position; _camCaptured = true; }
-                Vector3 target = _avatar.gameObject.transform.position + Vector3.up * 1.0f;
-                Vector3 to = target - _cam.transform.position;
+                var cam = FindMenuCamera();
+                if (cam == null || _avatar.gameObject == null) return;
+                EnsureCamCaptured(cam);
+
+                Vector3 target = _avatar.gameObject.transform.position + Vector3.up * _focusHeight;
+                Vector3 to = target - cam.transform.position;     // camera -> character
                 float dist = to.magnitude;
-                float step = delta * 0.15f * Mathf.Max(0.5f, dist);
-                if (dist - step > 0.6f) _cam.transform.position += to.normalized * step;
+                if (dist < 0.001f) return;
+                if (_baseDist <= 0f) _baseDist = dist;
+
+                float newDist = Mathf.Clamp(dist - delta * 0.12f * dist, _baseDist * 0.35f, _baseDist * 1.6f);
+                cam.transform.position = target - to.normalized * newDist;   // stay on the same view line, change distance only
+                _zoomPercent = Mathf.RoundToInt(_baseDist / Mathf.Max(0.01f, newDist) * 100f);
             }
             catch (Exception e) { Core.Log?.Warning("[preview] zoom: " + e.Message); }
         }
@@ -308,12 +361,13 @@ namespace Inkubator.Editor
                     if (at != null && _origParent != null) { at.SetParent(_origParent, true); at.SetSiblingIndex(_origSibling); }
                     UnityEngine.Object.Destroy(_pivot.gameObject);
                 }
+                if (_menuCam != null && _camCaptured) _menuCam.transform.position = _origCamPos;   // put the shared menu camera back
             }
             catch { }
             _pivot = null; _origParent = null;
-            try { if (_cam != null && _camCaptured) _cam.transform.position = _origCamPos; } catch { }
-            _cam = null; _camCaptured = false;
+            _menuCam = null; _camCaptured = false; _baseDist = 0f; _focusHeight = 1.0f; _zoomPercent = 100;
         }
+
 
         /// <summary>Log the avatar's body / face / accessory layer paths once, so clothing layers can be identified.</summary>
         public static void LogLayers()

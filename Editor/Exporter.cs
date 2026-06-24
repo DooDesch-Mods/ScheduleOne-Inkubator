@@ -273,32 +273,28 @@ Made with Inkubator. Add your own support / contact info here before publishing.
             return sb.ToString();
         }
 
-        // Write icon.png from the user-picked IconSource (copied as-is; warns if not 256x256). Falls back to a
-        // generated dark placeholder when no icon is chosen or the chosen file is missing/unreadable.
+        // Write icon.png from the user-picked IconSource, auto-resized to the 256x256 Thunderstore wants. Falls back to
+        // a generated dark placeholder when no icon is chosen or the chosen file is missing/unreadable.
         private static void WriteIcon(Project project, string path, ExportResult result)
         {
             string srcAbs = ProjectStore.ResolveRelative(project, project.IconSource);
             if (!string.IsNullOrEmpty(srcAbs) && File.Exists(srcAbs))
             {
-                Texture2D chosen = null;
+                Texture2D chosen = null, scaled = null;
                 try
                 {
                     chosen = ImageLoader.LoadTexture(srcAbs);
                     if (chosen != null)
                     {
-                        byte[] png = ImageConversion.EncodeToPNG(chosen);
-                        if (png != null && png.Length > 0)
-                        {
-                            File.WriteAllBytes(path, png);
-                            if (chosen.width != 256 || chosen.height != 256)
-                                result.Warnings.Add("icon.png is " + chosen.width + "x" + chosen.height + ", Thunderstore wants 256x256 - resize it before uploading.");
-                            return;
-                        }
+                        Texture2D out256 = chosen;
+                        if (chosen.width != 256 || chosen.height != 256) { scaled = ScaleIcon(chosen, 256); if (scaled != null) out256 = scaled; }
+                        byte[] png = ImageConversion.EncodeToPNG(out256);
+                        if (png != null && png.Length > 0) { File.WriteAllBytes(path, png); return; }
                     }
                     result.Warnings.Add("Could not read the chosen icon; a placeholder icon.png was written instead.");
                 }
                 catch (Exception e) { Core.Log?.Warning("[export] icon source: " + e.Message); result.Warnings.Add("Could not read the chosen icon; a placeholder icon.png was written instead."); }
-                finally { if (chosen != null) UnityEngine.Object.Destroy(chosen); }
+                finally { if (scaled != null) UnityEngine.Object.Destroy(scaled); if (chosen != null) UnityEngine.Object.Destroy(chosen); }
             }
 
             // Placeholder fallback.
@@ -397,6 +393,28 @@ Full text: https://creativecommons.org/publicdomain/zero/1.0/legalcode
             {
                 RenderTexture.active = rt;
                 GL.Clear(true, true, c);
+                var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+                tex.ReadPixels(new Rect(0, 0, size, size), 0, 0);
+                tex.Apply(false);
+                return tex;
+            }
+            finally
+            {
+                RenderTexture.active = prev;
+                RenderTexture.ReleaseTemporary(rt);
+            }
+        }
+
+        // Bilinear-scale a texture into a new size x size Texture2D (GPU blit). Used to fit the icon to Thunderstore's 256.
+        private static Texture2D ScaleIcon(Texture2D src, int size)
+        {
+            RenderTexture rt = RenderTexture.GetTemporary(size, size, 0, RenderTextureFormat.ARGB32);
+            RenderTexture prev = RenderTexture.active;
+            try
+            {
+                rt.filterMode = FilterMode.Bilinear;
+                Graphics.Blit(src, rt);
+                RenderTexture.active = rt;
                 var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
                 tex.ReadPixels(new Rect(0, 0, size, size), 0, 0);
                 tex.Apply(false);

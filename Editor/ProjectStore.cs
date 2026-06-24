@@ -120,6 +120,22 @@ namespace Inkubator.Editor
             }
         }
 
+        /// <summary>Permanently delete a project's folder (the pack, its sources and bakes). Returns true on success.</summary>
+        public static bool Delete(string folder)
+        {
+            try
+            {
+                string dir = Paths.ProjectDir(folder);
+                if (Directory.Exists(dir)) Directory.Delete(dir, true);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Core.Log?.Warning("[project] delete '" + folder + "' failed: " + e.Message);
+                return false;
+            }
+        }
+
         /// <summary>
         /// Copy a PNG from anywhere on disk into the project's sources/ folder. Returns the source-relative
         /// path to store on a <see cref="Decal"/> (e.g. "sources/skull.png"), or null on failure.

@@ -2,7 +2,7 @@ using MelonLoader;
 using SideHustle;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(Inkubator.Core), "Inkubator", "0.1.0", "DooDesch", null)]
+[assembly: MelonInfo(typeof(Inkubator.Core), "Inkubator", "1.0.0", "DooDesch", "https://github.com/DooDesch-Mods/ScheduleOne-Inkubator")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 [assembly: MelonOptionalDependencies("SideHustle")]
 
@@ -37,7 +37,7 @@ namespace Inkubator
                     OnLaunchSingleplayer = OnLaunch,
                     OnExitToHub = OnExit
                 });
-                Log.Msg("Inkubator 0.1.0 registered with Side Hustle.");
+                Log.Msg("Inkubator 1.0.0 registered with Side Hustle.");
             }
             catch (System.Exception e)
             {
@@ -50,9 +50,6 @@ namespace Inkubator
         private static void OnExit(LaunchContext ctx)
         {
             Editor.EditorUI.Close();
-#if DEBUG
-            Dev.R1Spike.Close();
-#endif
         }
 
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
@@ -87,24 +84,17 @@ namespace Inkubator
             if (sceneName == "Menu") { _inMenu = true; _menuTime = 0f; _selfTestDone = false; }
         }
 
-        // F7 = R1 spike; a ".selftest" flag runs the headless pipeline test; an ".editortest" flag auto-opens the
+        // A ".selftest" flag runs the headless pipeline test; an ".editortest"/".reviewtest" flag auto-opens the
         // editor a few seconds after the menu loads (so the layout can be screenshotted without clicking).
         private void DebugUpdate()
         {
-            if (Input.GetKeyDown(KeyCode.F7))
-            {
-                (bool ok, string msg) = Dev.R1Spike.Apply();
-                Log?.Msg(ok ? "[R1] (F7) PASS - " + msg : "[R1] (F7) FAIL - " + msg);
-            }
-
-            if (_inMenu && !_selfTestDone)
+            if (_inMenu)
             {
                 _menuTime += Time.deltaTime;
-                if (_menuTime > 3f)
+                if (!_selfTestDone && _menuTime > 3f)
                 {
                     _selfTestDone = true;
-                    if (System.IO.File.Exists(Dev.CreatorSpike.FlagFile)) Dev.CreatorSpike.Run();
-                    else if (System.IO.File.Exists(Dev.SelfTest.FlagFile)) Dev.SelfTest.Run();
+                    if (System.IO.File.Exists(Dev.SelfTest.FlagFile)) Dev.SelfTest.Run();
                     else if (System.IO.File.Exists(ReviewTestFlag) && !Editor.EditorUI.IsOpen)
                     {
                         string pn = "";
