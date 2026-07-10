@@ -3,6 +3,15 @@
 All notable changes to Inkubator are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] - 2026-07-10
+
+### Fixed
+
+- Nexus/Vortex: the download now ships the DLL under a mods/ folder so Vortex installs it correctly. The
+  old flat archive could make Vortex deploy a stray "mods" file into the game folder and break the Mods
+  directory - if Inkubator never showed up for you after a Vortex install, this was why. Manual installs
+  and Thunderstore were never affected.
+
 ## [1.0.0] - 2026-06-24
 
 Initial release.

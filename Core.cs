@@ -2,7 +2,7 @@ using MelonLoader;
 using SideHustle;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(Inkubator.Core), "Inkubator", "1.0.0", "DooDesch", "https://github.com/DooDesch-Mods/ScheduleOne-Inkubator")]
+[assembly: MelonInfo(typeof(Inkubator.Core), "Inkubator", "1.0.1", "DooDesch", "https://github.com/DooDesch-Mods/ScheduleOne-Inkubator")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 [assembly: MelonOptionalDependencies("SideHustle")]
 
@@ -37,7 +37,7 @@ namespace Inkubator
                     OnLaunchSingleplayer = OnLaunch,
                     OnExitToHub = OnExit
                 });
-                Log.Msg("Inkubator 1.0.0 registered with Side Hustle.");
+                Log.Msg($"Inkubator {Info.Version} registered with Side Hustle.");
             }
             catch (System.Exception e)
             {
