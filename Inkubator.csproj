@@ -1,5 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- CI checks the build-libs Workspace out INSIDE the repo folder; keep its sources (ui duplicates) out of
+       the default compile glob. Linked sources are re-added AFTER this removal via props - every Workspace
+       props import must come below this ItemGroup, or the default glob and the props include the same files
+       twice (duplicate Compile items). -->
+  <ItemGroup>
+    <Compile Remove="Workspace/**/*.cs" />
+  </ItemGroup>
+
   <!-- Shared DooDesch.UI in-game design-system layer (tokens, button states, toasts/banners) - linked source.
        Local: Workspace is a sibling (../Workspace). CI checks it out as a subfolder (./Workspace). Import whichever exists. -->
   <Import Project="$(MSBuildThisFileDirectory)../Workspace/build/DooDeschUI.props" Condition="Exists('$(MSBuildThisFileDirectory)../Workspace/build/DooDeschUI.props')" />
@@ -24,15 +32,17 @@
     <RootNamespace>Inkubator</RootNamespace>
     <AssemblyName>Inkubator</AssemblyName>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <Version>1.0.0</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
     <!-- Copy PackageReference assemblies (ImageSharp) to the output so they can be deployed to UserLibs. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!-- ImageSharp 2.1.9 is Apache-2.0 (free for a public mod) and pure-managed (loads in MelonLoader's runtime).
          Its advisories are server-side image-attack DoS/overflow issues; here the user loads their own tattoo
          images locally, so the risk is negligible. Suppress the advisory build warnings. -->
-    <NoWarn>$(NoWarn);MSB3277;MSB3245;NU1903;NU1902</NoWarn>
+    <!-- CS0436: the referenced SideHustle.dll ships the same public DooDesch.UI types we compile as linked
+         source; the compiler prefers our local copy, which is exactly what we want. -->
+    <NoWarn>$(NoWarn);MSB3277;MSB3245;NU1903;NU1902;CS0436</NoWarn>
 
     <WorkspaceLibPath Condition="'$(WorkspaceLibPath)' == ''">$(MSBuildThisFileDirectory)../Workspace/lib</WorkspaceLibPath>
     <ModsDirectory Condition="'$(ModsDirectory)' == ''">D:\Launcher\SteamLibrary\steamapps\common\Schedule I\Mods</ModsDirectory>
