@@ -1,6 +1,6 @@
 # Inkubator - In-Game Tattoo Pack Editor for Schedule I
 
-> 🛟 **Need help or found a bug?** Get support at [support.doodesch.de](https://support.doodesch.de).
+> 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/inkubator](https://support.doodesch.de/inkubator).
 
 **Make a tattoo pack without ever leaving the game.** Inkubator opens a 3D tattoo editor right from the main
 menu: import your PNGs, place and scale them on the character, preview them live on the real menu rig, and
