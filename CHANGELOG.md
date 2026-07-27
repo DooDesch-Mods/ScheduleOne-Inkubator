@@ -3,6 +3,25 @@
 All notable changes to Inkubator are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.2] - 2026-07-27
+
+### Fixed
+
+- Tattoos now land on the body part you picked. Chest, left arm and right arm are three small islands in
+  one shared texture wrapped around the whole body, so choosing a placement never actually moved an image
+  and a new tattoo started on none of them. The canvas now frames the body part you are editing, a new
+  tattoo starts on it, and dragging stays there.
+- The faint "inked region" reference behind the canvas is finally visible. It never loaded outside a
+  development build, so on a normal install you were placing tattoos on a blank square.
+- "Hide clothes" actually hides the clothes. The game clears only six of its eight avatar layer slots, so
+  a shirt and jeans could stay stuck on the character while everything else said they were gone.
+- Tattoos no longer look darker than they should. The same slot leak could composite one layer several
+  times over, which read as a tint that nothing removed.
+- A tattoo no longer disappears without explanation. Past eight body layers the game silently drops one;
+  the editor now hides one of the character's own tattoos instead and says so.
+- The clothes and underwear buttons no longer double as a click on the character behind them, which
+  turned the model and triggered a redundant re-bake on every toggle.
+
 ## [1.0.1] - 2026-07-10
 
 ### Fixed
