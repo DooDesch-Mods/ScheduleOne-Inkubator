@@ -42,29 +42,22 @@ namespace Inkubator.Editor
             }
         }
 
-        /// <summary>A built-in layer of each placement to clone (inherits CombinedMaterial / Order / UV expectations).
-        /// Folder casing matches the shipped resource index exactly.</summary>
-        public static string SourceLayer(Placement p) => p switch
-        {
-            Placement.Chest => "Avatar/Layers/Tattoos/Chest/Chest_Bird",
-            Placement.LeftArm => "Avatar/Layers/Tattoos/LeftArm/LeftArm_Web",
-            Placement.RightArm => "Avatar/Layers/Tattoos/RightArm/RightArm_Web",
-            Placement.Face => "Avatar/Layers/Tattoos/Face/Face_Teardrop",
-            _ => "Avatar/Layers/Tattoos/Chest/Chest_Bird"
-        };
-
         /// <summary>
-        /// Every stock tattoo of a placement. Their combined alpha marks where that body part sits in the shared
-        /// body atlas, which is what the editor uses to frame its canvas (see <see cref="UvRegions"/>).
+        /// Every stock tattoo of a placement, casing exactly as in the shipped resource index. Two jobs: the first
+        /// entry is the layer a custom tattoo is cloned from (so it inherits the right sort Order), and their
+        /// combined alpha marks where the body part sits in the shared body atlas, which is how the editor frames
+        /// its canvas (see <see cref="UvRegions"/>).
         /// </summary>
         public static string[] StockLayers(Placement p) => p switch
         {
-            Placement.Chest => Build("Chest", "Bird", "DeadFace", "Egg", "LBC", "Sword"),
-            Placement.LeftArm => Build("LeftArm", "Alien", "Heart", "Peace", "Web", "Weed"),
-            Placement.RightArm => Build("RightArm", "Alien", "Heart", "Peace", "Web", "Weed"),
-            Placement.Face => Build("Face", "ForeheadCross", "Sword", "Teardrop", "Tribal"),
-            _ => new string[0]
+            Placement.LeftArm => Build("LeftArm", "Web", "Alien", "Heart", "Peace", "Weed"),
+            Placement.RightArm => Build("RightArm", "Web", "Alien", "Heart", "Peace", "Weed"),
+            Placement.Face => Build("Face", "Teardrop", "ForeheadCross", "Sword", "Tribal"),
+            _ => Build("Chest", "Bird", "DeadFace", "Egg", "LBC", "Sword")
         };
+
+        /// <summary>The built-in layer a custom tattoo of this placement is cloned from.</summary>
+        public static string SourceLayer(Placement p) => StockLayers(p)[0];
 
         private static string[] Build(string folder, params string[] names)
         {
@@ -83,8 +76,5 @@ namespace Inkubator.Editor
             string seg = p == Placement.Face ? "Face" : Token(p);
             return "Avatar/Layers/Tattoos/custom/inkubator_session/" + seg;
         }
-
-        /// <summary>Embedded UV-template resource name bundled with Inkubator (authoring canvas reference).</summary>
-        public static string TemplateResource(Placement p) => "Inkubator.Assets.Templates." + Token(p) + ".png";
     }
 }

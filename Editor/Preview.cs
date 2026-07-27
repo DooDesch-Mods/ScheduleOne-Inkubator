@@ -38,18 +38,18 @@ namespace Inkubator.Editor
                 foreach (var t in _trimmedStock) AvatarLayerSlots.AddOnce(body, t.path, t.tint);
                 _trimmedStock.Clear();
 
-                var dropped = AvatarLayerSlots.TrimToBudget(body, SlotPriority);
-                foreach (string p in dropped)
+                foreach (var d in AvatarLayerSlots.TrimToBudget(body, SlotPriority))
                 {
-                    _trimmedStock.Add((p, Color.white));
-                    Core.Log?.Msg("[budget] dropped stock tattoo " + p + " (only " + AvatarLayerSlots.BodySlots + " body layers render)");
+                    _trimmedStock.Add((d.layerPath, d.layerTint));
+                    Core.Log?.Msg("[budget] dropped stock tattoo " + d.layerPath + " (only " + AvatarLayerSlots.BodySlots + " body layers render)");
                 }
             }
             AvatarLayerSlots.LoadAndClean(_avatar, cur);
         }
 
-        // Who gives up a slot first: the character's own stock tattoos, because the project's tattoos are the whole
-        // point of the preview and the clothing toggles are how the user looks underneath them.
+        // Who gives up a slot first. The project's own tattoos are what the preview exists to show, so they stay.
+        // The clothes go before them but after nothing else, because hiding them is a deliberate toggle the user
+        // owns - which leaves the character's stock tattoos as the thing to drop first.
         private static int SlotPriority(string path)
         {
             if (string.IsNullOrEmpty(path)) return 0;

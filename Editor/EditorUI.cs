@@ -681,8 +681,9 @@ namespace Inkubator.Editor
 
             TopLabel(parent, "InsH", "Decal", -14, 24, 16, FontStyle.Bold);
             float y = -56f;
-            _scaleSlider = SliderRow(parent, "Size", 0.004f, 2f, Mathf.Clamp(_selected.Scale, 0.004f, 2f),
-                v => AdjustLive(d => d.Scale = Mathf.Clamp(v, 0.004f, 2f)), out _sizeVal, () => AdjustReset(d => d.Scale = 0.35f), ref y);
+            _scaleSlider = SliderRow(parent, "Size", MinScale, MaxScale, CanvasScaleOf(_selected),
+                v => AdjustLive(d => d.Scale = AtlasScale(Mathf.Clamp(v, MinScale, MaxScale))), out _sizeVal,
+                () => AdjustReset(d => d.Scale = AtlasScale(DefaultScale)), ref y);
             _rotSlider = SliderRow(parent, "Rotate", 0f, 360f, Mathf.Repeat(_selected.RotationDeg, 360f),
                 v => AdjustLive(d => d.RotationDeg = v), out _rotVal, () => AdjustReset(d => d.RotationDeg = 0f), ref y);
             _opSlider = SliderRow(parent, "Opacity", 0f, 1f, Mathf.Clamp01(_selected.Opacity),
@@ -747,8 +748,8 @@ namespace Inkubator.Editor
         {
             if (_selected == null) return;
             _suppressSlider = true;   // setting slider.value programmatically must not re-fire the edit callbacks
-            if (_sizeVal != null) _sizeVal.text = _selected.Scale.ToString("0.000");
-            if (_scaleSlider != null) _scaleSlider.value = Mathf.Clamp(_selected.Scale, 0.004f, 2f);
+            if (_sizeVal != null) _sizeVal.text = CanvasScaleOf(_selected).ToString("0.000");   // matches the slider
+            if (_scaleSlider != null) _scaleSlider.value = CanvasScaleOf(_selected);
             if (_rotVal != null) _rotVal.text = Mathf.RoundToInt(Mathf.Repeat(_selected.RotationDeg, 360f)) + " deg";
             if (_rotSlider != null) _rotSlider.value = Mathf.Repeat(_selected.RotationDeg, 360f);
             if (_opVal != null) _opVal.text = Mathf.RoundToInt(_selected.Opacity * 100f) + " %";
@@ -855,6 +856,16 @@ namespace Inkubator.Editor
 
         /// <summary>Canvas pixels per unit of atlas UV - the zoom factor the framed view applies.</summary>
         private static float CanvasScale => _viewRect.width <= 0f ? _uvSize : _uvSize / _viewRect.width;
+
+        // A decal's size is stored in atlas units, but edited in canvas units, so the size control covers the same
+        // useful range whether the canvas frames a whole atlas or a body part a few percent of it wide.
+        private const float MinScale = 0.004f, MaxScale = 2f, DefaultScale = 0.35f;
+
+        private static float AtlasScale(float canvasScale) => UvRegions.ToAtlasSize(_viewRect, canvasScale);
+        private static float CanvasScaleOf(Decal d) =>
+            Mathf.Clamp(UvRegions.ToCanvasSize(_viewRect, d != null ? d.Scale : DefaultScale), MinScale, MaxScale);
+        private static float ClampScale(float atlasScale) =>
+            Mathf.Clamp(atlasScale, AtlasScale(MinScale), AtlasScale(MaxScale));
 
         private static void CreateSprite(Decal d)
         {
@@ -1006,7 +1017,7 @@ namespace Inkubator.Editor
                 Source = rel,
                 U = region.center.x,
                 V = region.center.y,
-                Scale = 0.35f * region.width,
+                Scale = UvRegions.ToAtlasSize(region, DefaultScale),
                 Order = _selectedTattoo.Decals.Count
             };
             _selectedTattoo.Decals.Add(d);
@@ -1877,7 +1888,7 @@ namespace Inkubator.Editor
                     if (_selected != null)
                     {
                         if (Time.time - _lastWheelSnap > 0.5f) { Snapshot(); _lastWheelSnap = Time.time; }
-                        _selected.Scale = Mathf.Clamp(_selected.Scale * (1f + wheel * 0.06f), 0.004f, 2f);
+                        _selected.Scale = ClampScale(_selected.Scale * (1f + wheel * 0.06f));
                         UpdateSpriteTransform(_selected); UpdateControlValues(); MarkDirty();
                     }
                 }
@@ -1935,7 +1946,7 @@ namespace Inkubator.Editor
                     }
                     else // Scale
                     {
-                        _selected.Scale = Mathf.Clamp(_startScale * (1f + (mp.x - _dragStartMouse.x) * 0.004f), 0.004f, 2f);
+                        _selected.Scale = ClampScale(_startScale * (1f + (mp.x - _dragStartMouse.x) * 0.004f));
                     }
                     UpdateSpriteTransform(_selected); UpdateControlValues(); MarkDirty();
                 }

@@ -46,7 +46,10 @@ namespace Inkubator.Editor
             return r;
         }
 
-        /// <summary>A stock tattoo of the part, shown faintly behind the canvas so the inked area is visible.</summary>
+        /// <summary>
+        /// The stock tattoo shown faintly behind the canvas so the inked area is visible. It is the same layer a
+        /// custom tattoo is cloned from, so what the user sees is exactly the reference their art replaces.
+        /// </summary>
         internal static Texture Backdrop(Placement p)
         {
             if (_backdrops.TryGetValue(p, out Texture cached)) return cached;
@@ -59,6 +62,12 @@ namespace Inkubator.Editor
             _backdrops[p] = t;
             return t;
         }
+
+        /// <summary>A decal size in atlas units, given its size relative to the framed canvas.</summary>
+        internal static float ToAtlasSize(Rect view, float canvasSize) => canvasSize * (view.width <= 0f ? 1f : view.width);
+
+        /// <summary>Inverse of <see cref="ToAtlasSize"/>: an atlas size as a fraction of the framed canvas.</summary>
+        internal static float ToCanvasSize(Rect view, float atlasSize) => view.width <= 0f ? atlasSize : atlasSize / view.width;
 
         /// <summary>Maps a 0..1 point inside a view rect to full-atlas UV, which is what projects store.</summary>
         internal static Vector2 ToAtlas(Rect view, Vector2 local01) =>
