@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DooDesch.AvatarKit;
 using Il2CppScheduleOne.AvatarFramework;
 using S1API.Rendering;
 using UnityEngine;
@@ -19,6 +20,43 @@ namespace Inkubator.Editor
         private static readonly HashSet<string> _applied = new HashSet<string>();
         // Previously baked texture per placement path, destroyed on re-bake so live preview does not leak textures.
         private static readonly Dictionary<string, Texture2D> _lastTex = new Dictionary<string, Texture2D>();
+        // Stock tattoos the menu character came with that had to give up their slot to the project's own layers.
+        private static readonly List<(string path, Color tint)> _trimmedStock = new List<(string, Color)>();
+
+        /// <summary>How many of the character's own tattoos the last apply had to drop to stay inside the budget.</summary>
+        public static int TrimmedStockCount => _trimmedStock.Count;
+
+        // The single place that hands settings to the avatar. It re-offers previously trimmed stock tattoos (so the
+        // trim heals itself as soon as room frees up), enforces the eight-slot budget, and clears the slots vanilla
+        // leaves behind - see DooDesch.AvatarKit.AvatarLayerSlots for what the game gets wrong.
+        private static void Commit(AvatarSettings cur)
+        {
+            if (_avatar == null || cur == null) return;
+            var body = cur.BodyLayerSettings;
+            if (body != null)
+            {
+                foreach (var t in _trimmedStock) AvatarLayerSlots.AddOnce(body, t.path, t.tint);
+                _trimmedStock.Clear();
+
+                var dropped = AvatarLayerSlots.TrimToBudget(body, SlotPriority);
+                foreach (string p in dropped)
+                {
+                    _trimmedStock.Add((p, Color.white));
+                    Core.Log?.Msg("[budget] dropped stock tattoo " + p + " (only " + AvatarLayerSlots.BodySlots + " body layers render)");
+                }
+            }
+            AvatarLayerSlots.LoadAndClean(_avatar, cur);
+        }
+
+        // Who gives up a slot first: the character's own stock tattoos, because the project's tattoos are the whole
+        // point of the preview and the clothing toggles are how the user looks underneath them.
+        private static int SlotPriority(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return 0;
+            if (path.IndexOf("inkubator", StringComparison.OrdinalIgnoreCase) >= 0) return 3;
+            if (path.IndexOf("/Tattoos/", StringComparison.OrdinalIgnoreCase) >= 0) return 1;
+            return 2;
+        }
 
         /// <summary>Locate (and cache) the main-menu avatar. Returns false if not in the menu scene.</summary>
         public static bool EnsureAvatar()
@@ -60,7 +98,7 @@ namespace Inkubator.Editor
 
                 AddPathOnce(cur, path, placement == Placement.Face);
                 _applied.Add(path);
-                _avatar.LoadAvatarSettings(cur);
+                Commit(cur);
                 return true;
             }
             catch (Exception e) { Core.Log?.Warning("[preview] apply: " + e.Message); return false; }
@@ -74,9 +112,9 @@ namespace Inkubator.Editor
         {
             try
             {
-                if (!EnsureAvatar()) return false;
+                if (!EnsureAvatar()) { Core.Log?.Warning("[preview] no menu avatar"); return false; }
                 AvatarSettings cur = _avatar.CurrentSettings;
-                if (cur == null) return false;
+                if (cur == null) { Core.Log?.Warning("[preview] avatar CurrentSettings null"); return false; }
 
                 string path = Placements.SessionTargetPath(placement);
                 bool face = placement == Placement.Face;
@@ -88,21 +126,21 @@ namespace Inkubator.Editor
                     _applied.Remove(path);
                     if (_lastTex.TryGetValue(path, out var old) && old != null) UnityEngine.Object.Destroy(old);
                     _lastTex.Remove(path);
-                    _avatar.LoadAvatarSettings(cur);
+                    Commit(cur);
                     return true;
                 }
 
                 Texture2D baked = Baker.Bake(project, decals);
-                if (baked == null) return false;
+                if (baked == null) { Core.Log?.Warning("[preview] bake failed for " + path); return false; }
                 string source = Placements.SourceLayer(placement);
                 bool ok = AvatarLayerFactory.CreateAndRegisterAvatarLayer(source, path, "Inkubator " + Placements.Token(placement), baked);
-                if (!ok) { UnityEngine.Object.Destroy(baked); return false; }
+                if (!ok) { UnityEngine.Object.Destroy(baked); Core.Log?.Warning("[preview] register failed for " + path + " (source " + source + ")"); return false; }
 
                 if (_lastTex.TryGetValue(path, out var prev) && prev != null && prev != baked) UnityEngine.Object.Destroy(prev);
                 _lastTex[path] = baked;
                 AddPathOnce(cur, path, face);
                 _applied.Add(path);
-                _avatar.LoadAvatarSettings(cur);
+                Commit(cur);
                 return true;
             }
             catch (Exception e) { Core.Log?.Warning("[preview] applyplacement: " + e.Message); return false; }
@@ -124,7 +162,7 @@ namespace Inkubator.Editor
                 RemoveByContains(cur.FaceLayerSettings, "inkubator");
                 _applied.Clear();
                 DestroyTextures();
-                _avatar.LoadAvatarSettings(cur);
+                Commit(cur);
             }
             catch (Exception e) { Core.Log?.Warning("[preview] reset: " + e.Message); }
         }
@@ -149,7 +187,7 @@ namespace Inkubator.Editor
                 var cur = _avatar.CurrentSettings;
                 RemovePaths(cur.BodyLayerSettings, _applied);
                 RemovePaths(cur.FaceLayerSettings, _applied);
-                _avatar.LoadAvatarSettings(cur);
+                Commit(cur);
             }
             catch (Exception e) { Core.Log?.Warning("[preview] clear: " + e.Message); }
             finally { _applied.Clear(); DestroyTextures(); }
@@ -170,6 +208,7 @@ namespace Inkubator.Editor
             RestoreRig(); _avatar = null; _applied.Clear(); DestroyTextures();
             _outerStripped = false; _savedOuter.Clear();
             _underwearStripped = false; _savedUnderwear.Clear();
+            _trimmedStock.Clear();
         }
 
         // Two independent clothing toggles: the outer garments (T-Shirt / Jeans) and the underwear, each with its
@@ -211,7 +250,7 @@ namespace Inkubator.Editor
                         if (match(it.layerPath)) { Core.Log?.Msg("[" + tag + "] STRIP " + it.layerPath); saved.Add((it.layerPath, it.layerTint)); list.RemoveAt(i); }
                     }
                     state = true;
-                    _avatar.LoadAvatarSettings(cur);
+                    Commit(cur);
                 }
                 else if (!strip && state)
                 {
@@ -223,7 +262,7 @@ namespace Inkubator.Editor
                     }
                     saved.Clear();
                     state = false;
-                    _avatar.LoadAvatarSettings(cur);
+                    Commit(cur);
                 }
             }
             catch (Exception e) { Core.Log?.Warning("[preview] strip " + tag + ": " + e.Message); }

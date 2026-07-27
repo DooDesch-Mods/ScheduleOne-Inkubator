@@ -42,15 +42,36 @@ namespace Inkubator.Editor
             }
         }
 
-        /// <summary>A built-in layer of each placement to clone (inherits CombinedMaterial / Order / UV expectations).</summary>
+        /// <summary>A built-in layer of each placement to clone (inherits CombinedMaterial / Order / UV expectations).
+        /// Folder casing matches the shipped resource index exactly.</summary>
         public static string SourceLayer(Placement p) => p switch
         {
-            Placement.Chest => "Avatar/Layers/Tattoos/chest/Chest_Bird",
-            Placement.LeftArm => "Avatar/Layers/Tattoos/leftarm/LeftArm_Web",
-            Placement.RightArm => "Avatar/Layers/Tattoos/rightarm/RightArm_Web",
-            Placement.Face => "Avatar/Layers/Tattoos/face/Face_Teardrop",
-            _ => "Avatar/Layers/Tattoos/chest/Chest_Bird"
+            Placement.Chest => "Avatar/Layers/Tattoos/Chest/Chest_Bird",
+            Placement.LeftArm => "Avatar/Layers/Tattoos/LeftArm/LeftArm_Web",
+            Placement.RightArm => "Avatar/Layers/Tattoos/RightArm/RightArm_Web",
+            Placement.Face => "Avatar/Layers/Tattoos/Face/Face_Teardrop",
+            _ => "Avatar/Layers/Tattoos/Chest/Chest_Bird"
         };
+
+        /// <summary>
+        /// Every stock tattoo of a placement. Their combined alpha marks where that body part sits in the shared
+        /// body atlas, which is what the editor uses to frame its canvas (see <see cref="UvRegions"/>).
+        /// </summary>
+        public static string[] StockLayers(Placement p) => p switch
+        {
+            Placement.Chest => Build("Chest", "Bird", "DeadFace", "Egg", "LBC", "Sword"),
+            Placement.LeftArm => Build("LeftArm", "Alien", "Heart", "Peace", "Web", "Weed"),
+            Placement.RightArm => Build("RightArm", "Alien", "Heart", "Peace", "Web", "Weed"),
+            Placement.Face => Build("Face", "ForeheadCross", "Sword", "Teardrop", "Tribal"),
+            _ => new string[0]
+        };
+
+        private static string[] Build(string folder, params string[] names)
+        {
+            var outp = new string[names.Length];
+            for (int i = 0; i < names.Length; i++) outp[i] = "Avatar/Layers/Tattoos/" + folder + "/" + folder + "_" + names[i];
+            return outp;
+        }
 
         /// <summary>
         /// Stable per-placement custom Resources path used for LIVE PREVIEW. Re-baking overwrites the same path

@@ -17,6 +17,10 @@
   <Import Project="$(MSBuildThisFileDirectory)../Workspace/build/DooDeschUI.props" Condition="Exists('$(MSBuildThisFileDirectory)../Workspace/build/DooDeschUI.props')" />
   <Import Project="$(MSBuildThisFileDirectory)Workspace/build/DooDeschUI.props" Condition="Exists('$(MSBuildThisFileDirectory)Workspace/build/DooDeschUI.props')" />
 
+  <!-- Shared avatar layer-slot helper: vanilla clears only 6 of the body material's 8 layer slots - linked source. -->
+  <Import Project="$(MSBuildThisFileDirectory)../Workspace/build/AvatarLayers.props" Condition="Exists('$(MSBuildThisFileDirectory)../Workspace/build/AvatarLayers.props')" />
+  <Import Project="$(MSBuildThisFileDirectory)Workspace/build/AvatarLayers.props" Condition="Exists('$(MSBuildThisFileDirectory)Workspace/build/AvatarLayers.props')" />
+
   <!--
     Inkubator - MelonLoader IL2CPP in-game 3D tattoo editor for Schedule I.
     Registers as a singleplayer "gamemode" with Side Hustle. Launched from the main-menu hub, it runs as a
@@ -36,9 +40,9 @@
     <RootNamespace>Inkubator</RootNamespace>
     <AssemblyName>Inkubator</AssemblyName>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <Version>1.0.1</Version>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
-    <FileVersion>1.0.1.0</FileVersion>
+    <Version>1.0.2</Version>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
     <!-- Copy PackageReference assemblies (ImageSharp) to the output so they can be deployed to UserLibs. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!-- ImageSharp 2.1.9 is Apache-2.0 (free for a public mod) and pure-managed (loads in MelonLoader's runtime).

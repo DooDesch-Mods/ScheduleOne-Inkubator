@@ -386,12 +386,16 @@ namespace Inkubator.Editor
             var le = s.AddComponent<LayoutElement>(); le.flexibleWidth = 1; le.minWidth = 10;
         }
 
+        // The stage button rows, so clicks on them are not mistaken for grabbing the character behind them.
+        private static readonly List<RectTransform> _stageRows = new List<RectTransform>();
+
         // Center-stage controls (under the rig): turn / zoom + clothes / underwear toggles. Two sibling rows (no nested
         // layout groups - those collapse on this canvas).
         private static void BuildStageControls()
         {
+            _stageRows.Clear();
             var rowA = UIFactory.Panel("StageA", _screen.transform, Clear);
-            Place(rowA, 0.20f, 0.085f, 0.46f, 0.135f);
+            _stageRows.Add(Place(rowA, 0.20f, 0.085f, 0.46f, 0.135f));
             var aImg = rowA.GetComponent<Image>(); if (aImg != null) aImg.raycastTarget = false;
             var ah = rowA.AddComponent<HorizontalLayoutGroup>();
             ah.spacing = 6; ah.childAlignment = TextAnchor.MiddleCenter; ah.childForceExpandWidth = false; ah.childForceExpandHeight = false;
@@ -404,7 +408,7 @@ namespace Inkubator.Editor
             _zoomLabel.color = Theme.TextMuted; AddLE(_zoomLabel.gameObject, 30, 54);
 
             var rowB = UIFactory.Panel("StageB", _screen.transform, Clear);
-            Place(rowB, 0.20f, 0.028f, 0.46f, 0.078f);
+            _stageRows.Add(Place(rowB, 0.20f, 0.028f, 0.46f, 0.078f));
             var bImg = rowB.GetComponent<Image>(); if (bImg != null) bImg.raycastTarget = false;
             var bh = rowB.AddComponent<HorizontalLayoutGroup>();
             bh.spacing = 8; bh.childAlignment = TextAnchor.MiddleCenter; bh.childForceExpandWidth = false; bh.childForceExpandHeight = false;
@@ -788,6 +792,7 @@ namespace Inkubator.Editor
             _uvArea = area.GetComponent<RectTransform>();
             _uvArea.anchorMin = new Vector2(0.5f, 0.5f); _uvArea.anchorMax = new Vector2(0.5f, 0.5f); _uvArea.pivot = new Vector2(0.5f, 0.5f);
             _uvArea.sizeDelta = new Vector2(_uvSize, _uvSize); _uvArea.anchoredPosition = Vector2.zero;
+            _viewRect = ComputeViewRect(_tab);   // the canvas frames this part's island; needed by the backdrop below
 
             // Move / Rotate / Scale tool switcher, docked above the canvas (replaces the old "Tool: ..." text line).
             var toolIcons = new[] { ToolIcons.Get("tool_move"), ToolIcons.Get("tool_rotate"), ToolIcons.Get("tool_scale") };
@@ -796,12 +801,18 @@ namespace Inkubator.Editor
             tsRT.anchorMin = new Vector2(0.5f, 1f); tsRT.anchorMax = new Vector2(0.5f, 1f); tsRT.pivot = new Vector2(0.5f, 1f);
             tsRT.sizeDelta = new Vector2(168, 32); tsRT.anchoredPosition = new Vector2(0, -6);
 
-            Sprite tpl = LoadTemplate(_tab);
-            if (tpl != null)
+            // Faint reference of where the ink actually sits on this body part, taken straight from a stock tattoo
+            // and cropped to the same slice of the atlas the canvas shows.
+            Texture backdrop = UvRegions.Backdrop(_tab);
+            if (backdrop != null)
             {
                 var bg = new GameObject("Template"); bg.transform.SetParent(_uvArea, false);
                 var brt = bg.AddComponent<RectTransform>(); brt.anchorMin = Vector2.zero; brt.anchorMax = Vector2.one; brt.offsetMin = Vector2.zero; brt.offsetMax = Vector2.zero;
-                var bi = bg.AddComponent<Image>(); bi.sprite = tpl; bi.color = new Color(1, 1, 1, 0.35f); bi.preserveAspect = true; bi.raycastTarget = false;
+                var bi = bg.AddComponent<RawImage>();
+                bi.texture = backdrop;
+                bi.uvRect = _viewRect;
+                bi.color = new Color(1, 1, 1, 0.35f);
+                bi.raycastTarget = false;
             }
             string capText = _selectedTattoo != null ? ("Editing: " + _selectedTattoo.Name) : (Label(_tab) + " - select or add a tattoo");
             var cap = UIFactory.Text("Cap", capText + "  (faint = inked region)", _uvArea, 13, TextAnchor.UpperCenter);
@@ -810,13 +821,40 @@ namespace Inkubator.Editor
             cap.rectTransform.anchoredPosition = new Vector2(0, 18); cap.rectTransform.sizeDelta = new Vector2(0, 24);
         }
 
+        // The slice of the shared body atlas the canvas currently shows. Recomputed whenever the sprites are
+        // rebuilt, so it always covers the part's island plus anything an older project placed outside it.
+        private static Rect _viewRect = new Rect(0f, 0f, 1f, 1f);
+
         private static void RebuildDecalSprites()
         {
             _decalSprites.Clear(); _selRing = null;
+            _viewRect = ComputeViewRect(_tab);
             if (_uvArea == null || _selectedTattoo == null) return;
             foreach (Decal d in _selectedTattoo.Decals) CreateSprite(d);
             UpdateSelectionRing();
         }
+
+        // The part's measured island, widened to also contain every decal already placed for that part. Projects
+        // made before the canvas was framed stored atlas-wide coordinates; widening keeps them reachable instead
+        // of clamping them somewhere else.
+        private static Rect ComputeViewRect(Placement p)
+        {
+            Rect r = UvRegions.Region(p);
+            if (_project == null) return r;
+
+            float minU = r.xMin, minV = r.yMin, maxU = r.xMax, maxV = r.yMax;
+            foreach (TattooEntry t in TattoosFor(p))
+                foreach (Decal d in t.Decals)
+                {
+                    float half = d.Scale * 0.5f;
+                    minU = Mathf.Min(minU, d.U - half); maxU = Mathf.Max(maxU, d.U + half);
+                    minV = Mathf.Min(minV, d.V - half); maxV = Mathf.Max(maxV, d.V + half);
+                }
+            return UvRegions.Square(Rect.MinMaxRect(Mathf.Clamp01(minU), Mathf.Clamp01(minV), Mathf.Clamp01(maxU), Mathf.Clamp01(maxV)));
+        }
+
+        /// <summary>Canvas pixels per unit of atlas UV - the zoom factor the framed view applies.</summary>
+        private static float CanvasScale => _viewRect.width <= 0f ? _uvSize : _uvSize / _viewRect.width;
 
         private static void CreateSprite(Decal d)
         {
@@ -835,9 +873,10 @@ namespace Inkubator.Editor
             float aspect = 1f;
             if (img != null && img.sprite != null && img.sprite.texture != null && img.sprite.texture.width > 0)
                 aspect = img.sprite.texture.height / (float)img.sprite.texture.width;
-            float w = d.Scale * _uvSize;
+            float w = d.Scale * CanvasScale;
             rt.sizeDelta = new Vector2(w, w * aspect);
-            rt.anchoredPosition = new Vector2((d.U - 0.5f) * _uvSize, (d.V - 0.5f) * _uvSize);
+            Vector2 local = UvRegions.ToLocal(_viewRect, new Vector2(d.U, d.V));
+            rt.anchoredPosition = new Vector2((local.x - 0.5f) * _uvSize, (local.y - 0.5f) * _uvSize);
             rt.localEulerAngles = new Vector3(0, 0, -d.RotationDeg);
             Vector3 sc = Vector3.one; if (d.FlipX) sc.x = -1; if (d.FlipY) sc.y = -1; rt.localScale = sc;
             if (img != null) { Color c = img.color; c.a = Mathf.Clamp01(d.Opacity); img.color = c; }
@@ -959,7 +998,17 @@ namespace Inkubator.Editor
 
             string rel = ProjectStore.ImportSource(_project, absPath);
             if (rel == null) { SetStatus("Import failed."); return; }
-            var d = new Decal { Source = rel, U = 0.5f, V = 0.5f, Scale = 0.35f, Order = _selectedTattoo.Decals.Count };
+            // Start on the body part the tattoo belongs to. U/V are atlas coordinates and the parts are small
+            // islands in that atlas, so a fixed (0.5, 0.5) would land on none of them.
+            Rect region = UvRegions.Region(_selectedTattoo.PlacementEnum);
+            var d = new Decal
+            {
+                Source = rel,
+                U = region.center.x,
+                V = region.center.y,
+                Scale = 0.35f * region.width,
+                Order = _selectedTattoo.Decals.Count
+            };
             _selectedTattoo.Decals.Add(d);
             _selected = d;
             _rightTab = RightTab.Inspector;     // the new decal is selected -> show its inspector
@@ -1095,7 +1144,9 @@ namespace Inkubator.Editor
             Preview.ApplyPlacement(_project, p, decals);
         }
 
-        private static void PreviewCurrent() => RefreshPlacementPreview(_tab);
+        // Refresh the part the edited tattoo belongs to, which is not always the open tab: the review screen can
+        // move a tattoo to another placement, and undo/redo re-resolves the selection across the whole project.
+        private static void PreviewCurrent() => RefreshPlacementPreview(_selectedTattoo != null ? _selectedTattoo.PlacementEnum : _tab);
 
         private static void ExportCurrent()
         {
@@ -1874,7 +1925,9 @@ namespace Inkubator.Editor
                         Vector2 pos = local + _dragOffset;
                         pos.x = Mathf.Clamp(pos.x, -_uvSize * 0.5f, _uvSize * 0.5f);
                         pos.y = Mathf.Clamp(pos.y, -_uvSize * 0.5f, _uvSize * 0.5f);
-                        _selected.U = pos.x / _uvSize + 0.5f; _selected.V = pos.y / _uvSize + 0.5f;
+                        // The canvas shows one framed slice of the atlas; projects always store atlas coordinates.
+                        Vector2 uv = UvRegions.ToAtlas(_viewRect, new Vector2(pos.x / _uvSize + 0.5f, pos.y / _uvSize + 0.5f));
+                        _selected.U = uv.x; _selected.V = uv.y;
                     }
                     else if (_tool == Tool.Rotate)
                     {
@@ -1922,11 +1975,21 @@ namespace Inkubator.Editor
             catch { }
         }
 
-        // The open centre strip where the 3D character stands (between the left rail and the UV canvas).
+        // The open centre strip where the 3D character stands (between the left rail and the UV canvas). The stage
+        // button rows sit inside that same x range, so they have to be excluded explicitly - otherwise clicking
+        // "Hide clothes" also starts an avatar-rotate gesture, which on mouse-up saves and schedules a re-bake.
         private static bool InCharacterRegion(Vector2 screenPos)
         {
             float x = screenPos.x;
-            return x > Screen.width * 0.20f && x < Screen.width * 0.46f;
+            if (x <= Screen.width * 0.20f || x >= Screen.width * 0.46f) return false;
+            return !OverStageRows(screenPos);
+        }
+
+        private static bool OverStageRows(Vector2 screenPos)
+        {
+            foreach (RectTransform rt in _stageRows)
+                if (rt != null && RectTransformUtility.RectangleContainsScreenPoint(rt, screenPos, null)) return true;
+            return false;
         }
 
         // Smooth wheel scrolling. Unity's ScrollRect wheel handling is an instant per-notch jump: small steps feel
@@ -2072,19 +2135,6 @@ namespace Inkubator.Editor
             Placement.Chest => "Chest", Placement.LeftArm => "Left arm", Placement.RightArm => "Right arm", Placement.Face => "Face", _ => p.ToString()
         };
 
-        private static Sprite LoadTemplate(Placement p)
-        {
-            try
-            {
-                string dir = Path.Combine(MelonLoader.Utils.MelonEnvironment.UserDataDirectory, "Inkorporated", "Templates", Placements.Token(p));
-                if (!Directory.Exists(dir)) return null;
-                foreach (string f in Directory.GetFiles(dir, "*.png"))
-                    if (!f.EndsWith("_normal.png", StringComparison.OrdinalIgnoreCase)) return LoadSprite(f);
-                return null;
-            }
-            catch { return null; }
-        }
-
         private static Sprite LoadSprite(string path)
         {
             try
@@ -2110,10 +2160,21 @@ namespace Inkubator.Editor
 
         private static void SetStatus(string s, Severity sev)
         {
+            s += BudgetNote();
             _status = s;
             if (_statusText != null) _statusText.text = s;
             if (!string.IsNullOrEmpty(s)) Toast.Show(s, sev);
             Core.Log?.Msg("[editor] " + s);
+        }
+
+        // The character renders only eight body layers at once. When the project needs more room than that, the
+        // preview gives up the character's own stock tattoos first - say so rather than let one quietly vanish.
+        private static string BudgetNote()
+        {
+            int dropped = Preview.TrimmedStockCount;
+            if (dropped <= 0) return string.Empty;
+            return "  (" + dropped + " of the character's own tattoo" + (dropped == 1 ? "" : "s") +
+                   " hidden - only " + DooDesch.AvatarKit.AvatarLayerSlots.BodySlots + " body layers render at once)";
         }
         private static void ClearScreen() { ClearScrollers(); if (_screen != null) { UnityEngine.Object.Destroy(_screen); _screen = null; } }
 
