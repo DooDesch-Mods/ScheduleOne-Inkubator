@@ -802,9 +802,19 @@ namespace Inkubator.Editor
             tsRT.anchorMin = new Vector2(0.5f, 1f); tsRT.anchorMax = new Vector2(0.5f, 1f); tsRT.pivot = new Vector2(0.5f, 1f);
             tsRT.sizeDelta = new Vector2(168, 32); tsRT.anchoredPosition = new Vector2(0, -6);
 
-            // Faint reference of where the ink actually sits on this body part, taken straight from a stock tattoo
-            // and cropped to the same slice of the atlas the canvas shows.
-            Texture backdrop = UvRegions.Backdrop(_tab);
+            // How much of the atlas the canvas shows. "Part" zooms to the body part so a tattoo lands where the
+            // placement says; "Full body" opens the whole skin so anywhere else - back, belly, forearms, hands,
+            // the back of the head - is reachable too. Only the view changes; the placement still decides how the
+            // tattoo is exported.
+            var frameSeg = Components.Segmented(holder.transform, new[] { "Part", "Full body" }, _fullBody ? 1 : 0,
+                i => SetCanvasFrame(i == 1), out _frameSegButtons, false, 4f);
+            var fsRT = frameSeg.GetComponent<RectTransform>();
+            fsRT.anchorMin = new Vector2(0.5f, 0f); fsRT.anchorMax = new Vector2(0.5f, 0f); fsRT.pivot = new Vector2(0.5f, 1f);
+            fsRT.sizeDelta = new Vector2(168, 30); fsRT.anchoredPosition = new Vector2(0, -8);
+
+            // Faint reference behind the canvas: the stock tattoo of this part when zoomed to it, and a map of the
+            // skin's clothed areas in full-body view, so the atlas is not a blank square in either mode.
+            Texture backdrop = _fullBody ? UvRegions.BodyMap() : UvRegions.Backdrop(_tab);
             if (backdrop != null)
             {
                 var bg = new GameObject("Template"); bg.transform.SetParent(_uvArea, false);
@@ -812,11 +822,12 @@ namespace Inkubator.Editor
                 var bi = bg.AddComponent<RawImage>();
                 bi.texture = backdrop;
                 bi.uvRect = _viewRect;
-                bi.color = new Color(1, 1, 1, 0.35f);
+                bi.color = new Color(1, 1, 1, _fullBody ? 0.22f : 0.35f);
                 bi.raycastTarget = false;
             }
             string capText = _selectedTattoo != null ? ("Editing: " + _selectedTattoo.Name) : (Label(_tab) + " - select or add a tattoo");
-            var cap = UIFactory.Text("Cap", capText + "  (faint = inked region)", _uvArea, 13, TextAnchor.UpperCenter);
+            string capHint = _fullBody ? "  (whole skin - place anywhere)" : "  (faint = inked region)";
+            var cap = UIFactory.Text("Cap", capText + capHint, _uvArea, 13, TextAnchor.UpperCenter);
             cap.color = new Color(1, 1, 1, 0.45f);
             cap.rectTransform.anchorMin = new Vector2(0, 1); cap.rectTransform.anchorMax = new Vector2(1, 1); cap.rectTransform.pivot = new Vector2(0.5f, 1);
             cap.rectTransform.anchoredPosition = new Vector2(0, 18); cap.rectTransform.sizeDelta = new Vector2(0, 24);
@@ -835,11 +846,27 @@ namespace Inkubator.Editor
             UpdateSelectionRing();
         }
 
+        // Whether the canvas shows the whole skin instead of just the selected body part. Kept for the session so
+        // switching tabs does not undo the choice.
+        private static bool _fullBody;
+        private static Button[] _frameSegButtons;   // Part/Full body canvas-framing switcher docked under the canvas
+
+        private static void SetCanvasFrame(bool fullBody)
+        {
+            if (_fullBody == fullBody) return;
+            _fullBody = fullBody;
+            ShowEditor();   // reframes the canvas, the backdrop, the decal sprites and the size control together
+            SetStatus(fullBody
+                ? "Full body - place this tattoo anywhere on the skin."
+                : "Framed on " + Label(_tab).ToLowerInvariant() + " - switch to Full body to reach the rest.");
+        }
+
         // The part's measured island, widened to also contain every decal already placed for that part. Projects
         // made before the canvas was framed stored atlas-wide coordinates; widening keeps them reachable instead
         // of clamping them somewhere else.
         private static Rect ComputeViewRect(Placement p)
         {
+            if (_fullBody) return new Rect(0f, 0f, 1f, 1f);
             Rect r = UvRegions.Region(p);
             if (_project == null) return r;
 

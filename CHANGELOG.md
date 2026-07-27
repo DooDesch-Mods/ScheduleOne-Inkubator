@@ -3,6 +3,17 @@
 All notable changes to Inkubator are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.3] - 2026-07-27
+
+### Added
+
+- **Full body** canvas mode. 1.0.2 framed the canvas on the selected body part, which fixed tattoos landing
+  in the wrong place but also locked you out of everywhere the game has no stock tattoo for: forearms,
+  hands, shoulders, belly, legs, back and the back of the head. A Part / Full body switch under the canvas
+  now opens the whole skin, and the faint backdrop turns into a map of the body so you can see where you
+  are aiming. The body part you picked still decides how the tattoo is exported - the switch only changes
+  what you are looking at.
+
 ## [1.0.2] - 2026-07-27
 
 ### Fixed

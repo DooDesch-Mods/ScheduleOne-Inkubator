@@ -205,7 +205,7 @@ namespace Inkubator.Editor
         /// <summary>Drop the cached avatar (call when leaving the menu scene).</summary>
         public static void Forget()
         {
-            RestoreRig(); _avatar = null; _applied.Clear(); DestroyTextures();
+            RestoreRig(); _avatar = null; _applied.Clear(); DestroyTextures(); UvRegions.Forget();
             _outerStripped = false; _savedOuter.Clear();
             _underwearStripped = false; _savedUnderwear.Clear();
             _trimmedStock.Clear();

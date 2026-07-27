@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Il2CppScheduleOne.AvatarFramework;
 using UnityEngine;
 
@@ -63,6 +64,48 @@ namespace Inkubator.Editor
             return t;
         }
 
+        // Stock layers whose combined coverage traces the body in the atlas: a full-body suit for the bulk of it,
+        // trousers for the legs, gloves for the hands, and the censor dots as a front-of-torso landmark.
+        private static readonly string[] BodyMapLayers =
+        {
+            "Avatar/Layers/Top/HazmatSuit", "Avatar/Layers/Top/Overalls", "Avatar/Layers/Top/T-Shirt",
+            "Avatar/Layers/Bottom/Jeans", "Avatar/Layers/Accessories/Gloves", "Avatar/Layers/Top/Nipples"
+        };
+
+        private static Texture2D _bodyMap;
+        private static bool _bodyMapTried;
+
+        /// <summary>
+        /// A faint map of the skin for the full-body view: several stock garments composited into one texture, so
+        /// the atlas shows roughly where the body is instead of being an empty square. Built once per session.
+        /// </summary>
+        internal static Texture2D BodyMap()
+        {
+            if (_bodyMapTried) return _bodyMap;
+            _bodyMapTried = true;
+
+            const int N = 512;
+            var acc = new Color32[N * N];
+            bool any = false;
+            foreach (string path in BodyMapLayers)
+            {
+                AvatarLayer lay = Load(path);
+                if (lay == null || lay.Texture == null) continue;
+                Color32[] px = ReadDown(lay.Texture, N);
+                if (px == null) continue;
+                for (int i = 0; i < px.Length; i++)
+                    if (px[i].a >= AlphaThreshold && acc[i].a < px[i].a) acc[i] = new Color32(255, 255, 255, px[i].a);
+                any = true;
+            }
+            if (!any) { Core.Log?.Warning("[uv] no stock garment loadable, full-body view has no backdrop"); return null; }
+
+            _bodyMap = new Texture2D(N, N, TextureFormat.RGBA32, false);
+            _bodyMap.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            _bodyMap.SetPixels32(new Il2CppStructArray<Color32>(acc));
+            _bodyMap.Apply(false);
+            return _bodyMap;
+        }
+
         /// <summary>A decal size in atlas units, given its size relative to the framed canvas.</summary>
         internal static float ToAtlasSize(Rect view, float canvasSize) => canvasSize * (view.width <= 0f ? 1f : view.width);
 
@@ -115,43 +158,59 @@ namespace Inkubator.Editor
             return new Rect(cx - side * 0.5f, cy - side * 0.5f, side, side);
         }
 
-        // Stock layer textures are not CPU-readable, so trace them through a RenderTexture.
         private static bool AlphaBounds(Texture2D src, out float minU, out float minV, out float maxU, out float maxV)
         {
             minU = minV = 1f; maxU = maxV = 0f;
-            RenderTexture rt = RenderTexture.GetTemporary(SampleSize, SampleSize, 0, RenderTextureFormat.ARGB32);
+            Color32[] px = ReadDown(src, SampleSize);
+            if (px == null) return false;
+
+            bool any = false;
+            for (int y = 0; y < SampleSize; y++)
+                for (int x = 0; x < SampleSize; x++)
+                {
+                    if (px[y * SampleSize + x].a < AlphaThreshold) continue;
+                    float u = x / (float)(SampleSize - 1), v = y / (float)(SampleSize - 1);
+                    if (u < minU) minU = u;
+                    if (v < minV) minV = v;
+                    if (u > maxU) maxU = u;
+                    if (v > maxV) maxV = v;
+                    any = true;
+                }
+            return any;
+        }
+
+        // Stock layer textures are not CPU-readable, so go through a RenderTexture to get at their pixels.
+        private static Color32[] ReadDown(Texture2D src, int size)
+        {
+            RenderTexture rt = RenderTexture.GetTemporary(size, size, 0, RenderTextureFormat.ARGB32);
             RenderTexture prev = RenderTexture.active;
             Texture2D copy = null;
             try
             {
                 Graphics.Blit(src, rt);
                 RenderTexture.active = rt;
-                copy = new Texture2D(SampleSize, SampleSize, TextureFormat.RGBA32, false);
-                copy.ReadPixels(new Rect(0, 0, SampleSize, SampleSize), 0, 0);
+                copy = new Texture2D(size, size, TextureFormat.RGBA32, false);
+                copy.ReadPixels(new Rect(0, 0, size, size), 0, 0);
                 copy.Apply(false);
-
-                var px = copy.GetPixels32();
-                bool any = false;
-                for (int y = 0; y < SampleSize; y++)
-                    for (int x = 0; x < SampleSize; x++)
-                    {
-                        if (px[y * SampleSize + x].a < AlphaThreshold) continue;
-                        float u = x / (float)(SampleSize - 1), v = y / (float)(SampleSize - 1);
-                        if (u < minU) minU = u;
-                        if (v < minV) minV = v;
-                        if (u > maxU) maxU = u;
-                        if (v > maxV) maxV = v;
-                        any = true;
-                    }
-                return any;
+                return copy.GetPixels32();
             }
-            catch (Exception e) { Core.Log?.Warning("[uv] trace failed: " + e.Message); return false; }
+            catch (Exception e) { Core.Log?.Warning("[uv] read failed: " + e.Message); return null; }
             finally
             {
                 RenderTexture.active = prev;
                 RenderTexture.ReleaseTemporary(rt);
                 if (copy != null) UnityEngine.Object.Destroy(copy);
             }
+        }
+
+        /// <summary>Drop the session caches (call when leaving the menu scene).</summary>
+        internal static void Forget()
+        {
+            _regions.Clear();
+            _backdrops.Clear();
+            if (_bodyMap != null) UnityEngine.Object.Destroy(_bodyMap);
+            _bodyMap = null;
+            _bodyMapTried = false;
         }
 
         private static AvatarLayer Load(string path)
