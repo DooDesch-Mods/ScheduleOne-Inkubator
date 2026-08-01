@@ -3,6 +3,13 @@
 All notable changes to Inkubator are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.4] - 2026-08-01
+
+### Changed
+
+- Runs on Schedule I 0.4.6f11.
+- Needs S1API 3.1.1, up from 3.0.5. Update it along with the mod.
+
 ## [1.0.3] - 2026-07-27
 
 ### Added

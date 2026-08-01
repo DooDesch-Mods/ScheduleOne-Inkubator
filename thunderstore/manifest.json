@@ -1,6 +1,6 @@
 {
   "name": "Inkubator",
-  "version_number": "1.0.0",
+  "version_number": "1.0.4",
   "website_url": "https://github.com/DooDesch-Mods/ScheduleOne-Inkubator",
   "description": "In-game 3D tattoo editor: import PNGs, place them on the character, preview live, and export a ready-to-publish Inkorporated tattoo pack - all from the main menu.",
   "dependencies": [
