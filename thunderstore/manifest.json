@@ -5,7 +5,7 @@
   "description": "In-game 3D tattoo editor: import PNGs, place them on the character, preview live, and export a ready-to-publish Inkorporated tattoo pack - all from the main menu.",
   "dependencies": [
     "LavaGang-MelonLoader-0.7.3",
-    "ifBars-S1API_Forked-3.0.5",
+    "ifBars-S1API_Forked-3.1.1",
     "DooDesch-SideHustle-1.0.0"
   ],
   "contributors": [
