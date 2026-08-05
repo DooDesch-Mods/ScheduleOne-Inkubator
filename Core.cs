@@ -2,7 +2,7 @@ using MelonLoader;
 using SideHustle;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(Inkubator.Core), "Inkubator", "1.0.4", "DooDesch", "https://github.com/DooDesch-Mods/ScheduleOne-Inkubator")]
+[assembly: MelonInfo(typeof(Inkubator.Core), "Inkubator", DooDesch.ModVersion.Current, "DooDesch", "https://github.com/DooDesch-Mods/ScheduleOne-Inkubator")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 [assembly: MelonOptionalDependencies("SideHustle")]
 
