@@ -2,6 +2,8 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/inkubator](https://support.doodesch.de/inkubator).
 
+📖 **Documentation:** [docs.doodesch.de/mods/inkubator/](https://docs.doodesch.de/mods/inkubator/)
+
 > Make a tattoo pack without ever leaving the game. Inkubator opens a 3D tattoo editor right from
 > the main menu: import your PNGs, place and scale them on the character, preview them live on the
 > real menu rig, and export a complete, ready-to-publish [Inkorporated](https://github.com/DooDesch-Mods/ScheduleOne-Inkorporated)
