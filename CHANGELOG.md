@@ -3,6 +3,20 @@
 All notable changes to Inkubator are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.5] - 2026-10-14
+
+### Fixed
+
+- The editor works on Schedule I 0.4.7. On that version 1.0.4 showed no tattoo on the character, and
+  "Hide clothes" and "Hide underwear" did nothing.
+- MLVScan no longer rates the mod Suspicious. The "open folder" buttons had a second way to start Explorer,
+  and the scanner flags that.
+
+### Changed
+
+- Needs Schedule I 0.4.7. On 0.4.6, keep 1.0.4.
+- Needs S1API 3.2.1, up from 3.1.1. Update it along with the mod.
+
 ## [1.0.4] - 2026-08-01
 
 ### Changed
