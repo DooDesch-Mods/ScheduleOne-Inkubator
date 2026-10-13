@@ -17,6 +17,7 @@
 ![S1API](https://img.shields.io/badge/S1API-required-orange)
 ![Side Hustle](https://img.shields.io/badge/Side%20Hustle-required-orange)
 ![Status](https://img.shields.io/badge/status-working-brightgreen)
+[![Polyfill](https://polyfill.doomods.com/badge/inkubator.svg)](https://polyfill.doomods.com/mod/inkubator)
 
 ## Features
 
