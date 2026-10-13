@@ -23,9 +23,6 @@
   <Import Project="$(MSBuildThisFileDirectory)../Workspace/build/DooDeschUI.props" Condition="Exists('$(MSBuildThisFileDirectory)../Workspace/build/DooDeschUI.props')" />
   <Import Project="$(MSBuildThisFileDirectory)Workspace/build/DooDeschUI.props" Condition="Exists('$(MSBuildThisFileDirectory)Workspace/build/DooDeschUI.props')" />
 
-  <!-- Shared avatar layer-slot helper: vanilla clears only 6 of the body material's 8 layer slots - linked source. -->
-  <Import Project="$(MSBuildThisFileDirectory)../Workspace/build/AvatarLayers.props" Condition="Exists('$(MSBuildThisFileDirectory)../Workspace/build/AvatarLayers.props')" />
-  <Import Project="$(MSBuildThisFileDirectory)Workspace/build/AvatarLayers.props" Condition="Exists('$(MSBuildThisFileDirectory)Workspace/build/AvatarLayers.props')" />
   <!-- Where a build is allowed to install: the test copy by default, and never a real game installation
        without saying so out loud. See Workspace/build/Deploy.props. -->
   <Import Project="$(MSBuildThisFileDirectory)../Workspace/build/Deploy.props" Condition="Exists('$(MSBuildThisFileDirectory)../Workspace/build/Deploy.props')" />
@@ -36,8 +33,8 @@
     Registers as a singleplayer "gamemode" with Side Hustle. Launched from the main-menu hub, it runs as a
     menu-space overlay that reuses the game's character rig: the player imports PNGs, places them on the
     character, previews live, and exports a complete, ready-to-release Inkorporated tattoo mod. Custom tattoo
-    textures are previewed via the same S1API AvatarLayerFactory + RuntimeResourceRegistry path Inkorporated
-    uses. Cloned from the Inkorporated / Side Hustle template.
+    textures are previewed as avatar objects registered in the game's AvatarObjectLibrary. Cloned from the
+    Inkorporated / Side Hustle template.
   -->
 
   <PropertyGroup>
@@ -124,6 +121,10 @@
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(GameManagedPath)/Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppScheduleOne.Core">
+      <HintPath>$(GameManagedPath)/Il2CppScheduleOne.Core.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="S1API.Il2Cpp.MelonLoader">
