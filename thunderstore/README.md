@@ -13,6 +13,8 @@ and launched through the Side Hustle hub.
 ![MelonLoader](https://img.shields.io/badge/MelonLoader-0.7.3+-green)
 ![S1API](https://img.shields.io/badge/S1API-required-orange)
 
+[![MLVScan Inkubator.dll](https://mlvscan.com/attestations/att_d18U-cxNERssOi-fogrKJmn3/badge.svg)](https://mlvscan.com/attestations/att_d18U-cxNERssOi-fogrKJmn3)
+
 ## Features
 
 - **In-game tattoo editor** - design a whole pack from the main menu, no image software or JSON needed.
