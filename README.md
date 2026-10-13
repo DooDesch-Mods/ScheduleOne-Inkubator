@@ -19,6 +19,8 @@
 ![Status](https://img.shields.io/badge/status-working-brightgreen)
 [![Polyfill](https://polyfill.doomods.com/badge/inkubator.svg)](https://polyfill.doomods.com/mod/inkubator)
 
+[![MLVScan Inkubator.dll](https://mlvscan.com/attestations/att_d18U-cxNERssOi-fogrKJmn3/badge.svg)](https://mlvscan.com/attestations/att_d18U-cxNERssOi-fogrKJmn3)
+
 ## Features
 
 - **In-game tattoo editor.** No image software, no JSON, no rebuilds - design a whole pack from the main menu.
