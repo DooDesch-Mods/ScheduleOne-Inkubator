@@ -2215,7 +2215,7 @@ namespace Inkubator.Editor
             int dropped = Preview.TrimmedStockCount;
             if (dropped <= 0) return string.Empty;
             return "  (" + dropped + " of the character's own tattoo" + (dropped == 1 ? "" : "s") +
-                   " hidden - only " + DooDesch.AvatarKit.AvatarLayerSlots.BodySlots + " body layers render at once)";
+                   " hidden - only " + Preview.BodySlots + " body layers render at once)";
         }
         private static void ClearScreen() { ClearScrollers(); if (_screen != null) { UnityEngine.Object.Destroy(_screen); _screen = null; } }
 
