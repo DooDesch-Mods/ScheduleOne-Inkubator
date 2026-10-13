@@ -2116,16 +2116,19 @@ namespace Inkubator.Editor
 
         private static void OpenFolder(string path)
         {
+            // One explicit Explorer call and nothing else: a process start inside a catch block reads as a
+            // hidden fallback path to mod scanners, and a shell-executed folder path leaves the handler open.
             try
             {
                 Directory.CreateDirectory(path);
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = path, UseShellExecute = true });
+                string quoted = "\"" + path + "\"";
+                System.Diagnostics.Process.Start("explorer.exe", quoted);
                 SetStatus("Opened: " + path);
             }
-            catch
+            catch (Exception e)
             {
-                try { System.Diagnostics.Process.Start("explorer.exe", "\"" + path + "\""); SetStatus("Opened: " + path); }
-                catch (Exception e) { SetStatus("Could not open folder (" + e.Message + "): " + path); }
+                Core.Log?.Error("[editor] OpenFolder failed for '" + path + "': " + e);
+                SetStatus("Could not open folder (" + e.Message + "): " + path);
             }
         }
 
