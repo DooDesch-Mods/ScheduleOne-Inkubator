@@ -12,6 +12,7 @@ and launched through the Side Hustle hub.
 ![Game](https://img.shields.io/badge/game-Schedule%20I-purple)
 ![MelonLoader](https://img.shields.io/badge/MelonLoader-0.7.3+-green)
 ![S1API](https://img.shields.io/badge/S1API-required-orange)
+[![Polyfill](https://polyfill.doomods.com/badge/inkubator.svg)](https://polyfill.doomods.com/mod/inkubator)
 
 [![MLVScan Inkubator.dll](https://mlvscan.com/attestations/att_d18U-cxNERssOi-fogrKJmn3/badge.svg)](https://mlvscan.com/attestations/att_d18U-cxNERssOi-fogrKJmn3)
 
