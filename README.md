@@ -4,8 +4,6 @@
 
 **Download:** [Nexus Mods](https://www.nexusmods.com/schedule1/mods/2233) · [Thunderstore](https://thunderstore.io/c/schedule-i/p/DooDesch/Inkubator/) · [GitHub Releases](https://github.com/DooDesch-Mods/ScheduleOne-Inkubator/releases)
 
-[![Discord](https://mods.doodesch.de/img/badge.svg)](https://mods.doodesch.de)
-
 📖 **Documentation:** [docs.doodesch.de/mods/inkubator/](https://docs.doodesch.de/mods/inkubator/)
 
 > Make a tattoo pack without ever leaving the game. Inkubator opens a 3D tattoo editor right from
@@ -21,7 +19,7 @@
 ![S1API](https://img.shields.io/badge/S1API-required-orange)
 ![Side Hustle](https://img.shields.io/badge/Side%20Hustle-required-orange)
 ![Status](https://img.shields.io/badge/status-working-brightgreen)
-[![Polyfill](https://polyfill.doomods.com/badge/inkubator.svg)](https://polyfill.doomods.com/mod/inkubator)
+[![Discord](https://mods.doodesch.de/img/badge.svg)](https://mods.doodesch.de) [![Polyfill](https://polyfill.doomods.com/badge/inkubator.svg)](https://polyfill.doomods.com/mod/inkubator)
 
 [![MLVScan Inkubator.dll](https://mlvscan.com/attestations/att_d18U-cxNERssOi-fogrKJmn3/badge.svg)](https://mlvscan.com/attestations/att_d18U-cxNERssOi-fogrKJmn3)
 

@@ -2,8 +2,6 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/inkubator](https://support.doodesch.de/inkubator).
 
-[![Discord](https://mods.doodesch.de/img/badge.svg)](https://mods.doodesch.de)
-
 **Make a tattoo pack without ever leaving the game.** Inkubator opens a 3D tattoo editor right from the main
 menu: import your PNGs, place and scale them on the character, preview them live on the real menu rig, and
 export a complete, ready-to-publish [Inkorporated](https://thunderstore.io/c/schedule-i/p/DooDesch/Inkorporated/)
@@ -14,7 +12,7 @@ and launched through the Side Hustle hub.
 ![Game](https://img.shields.io/badge/game-Schedule%20I-purple)
 ![MelonLoader](https://img.shields.io/badge/MelonLoader-0.7.3+-green)
 ![S1API](https://img.shields.io/badge/S1API-required-orange)
-[![Polyfill](https://polyfill.doomods.com/badge/inkubator.svg)](https://polyfill.doomods.com/mod/inkubator)
+[![Discord](https://mods.doodesch.de/img/badge.svg)](https://mods.doodesch.de) [![Polyfill](https://polyfill.doomods.com/badge/inkubator.svg)](https://polyfill.doomods.com/mod/inkubator)
 
 [![MLVScan Inkubator.dll](https://mlvscan.com/attestations/att_d18U-cxNERssOi-fogrKJmn3/badge.svg)](https://mlvscan.com/attestations/att_d18U-cxNERssOi-fogrKJmn3)
 
