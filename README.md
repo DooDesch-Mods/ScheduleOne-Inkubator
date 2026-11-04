@@ -4,6 +4,8 @@
 
 **Download:** [Nexus Mods](https://www.nexusmods.com/schedule1/mods/2233) · [Thunderstore](https://thunderstore.io/c/schedule-i/p/DooDesch/Inkubator/) · [GitHub Releases](https://github.com/DooDesch-Mods/ScheduleOne-Inkubator/releases)
 
+[![Discord](https://mods.doodesch.de/img/badge.svg)](https://mods.doodesch.de)
+
 📖 **Documentation:** [docs.doodesch.de/mods/inkubator/](https://docs.doodesch.de/mods/inkubator/)
 
 > Make a tattoo pack without ever leaving the game. Inkubator opens a 3D tattoo editor right from
@@ -82,6 +84,12 @@ auto-open flags) exist only in Debug builds and never ship.
 
 IL2CPP build only. The editor runs in menu space and loads no save, so it does not interact with an
 active game.
+
+## Community
+
+[![DooDesch Mods on Discord](https://mods.doodesch.de/img/card.svg)](https://mods.doodesch.de)
+
+Join the DooDesch Mods Discord: update pings, polls on what comes next, and playtests of new mods.
 
 ## Credits
 

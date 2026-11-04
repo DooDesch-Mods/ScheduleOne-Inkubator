@@ -2,6 +2,8 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/inkubator](https://support.doodesch.de/inkubator).
 
+[![Discord](https://mods.doodesch.de/img/badge.svg)](https://mods.doodesch.de)
+
 **Make a tattoo pack without ever leaving the game.** Inkubator opens a 3D tattoo editor right from the main
 menu: import your PNGs, place and scale them on the character, preview them live on the real menu rig, and
 export a complete, ready-to-publish [Inkorporated](https://thunderstore.io/c/schedule-i/p/DooDesch/Inkorporated/)
@@ -38,6 +40,12 @@ Open Side Hustle from the main menu and launch Inkubator. Drop your PNGs in the 
 the character per body part, set names and prices, fill in the pack details and hit Export. Your finished
 pack lands in `UserData/Inkubator/Exports/`, ready to zip and upload. Anyone who installs your pack together
 with Inkorporated gets your tattoos in the in-game tattoo shop.
+
+## Community
+
+[![DooDesch Mods on Discord](https://mods.doodesch.de/img/card.svg)](https://mods.doodesch.de)
+
+Join the DooDesch Mods Discord: update pings, polls on what comes next, and playtests of new mods.
 
 ## Credits
 
