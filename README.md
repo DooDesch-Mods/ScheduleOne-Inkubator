@@ -2,14 +2,16 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/inkubator](https://support.doodesch.de/inkubator).
 
+**Download:** [Nexus Mods](https://www.nexusmods.com/schedule1/mods/2233) · [Thunderstore](https://thunderstore.io/c/schedule-i/p/DooDesch/Inkubator/) · [GitHub Releases](https://github.com/DooDesch-Mods/ScheduleOne-Inkubator/releases)
+
 📖 **Documentation:** [docs.doodesch.de/mods/inkubator/](https://docs.doodesch.de/mods/inkubator/)
 
 > Make a tattoo pack without ever leaving the game. Inkubator opens a 3D tattoo editor right from
 > the main menu: import your PNGs, place and scale them on the character, preview them live on the
-> real menu rig, and export a complete, ready-to-publish [Inkorporated](https://github.com/DooDesch-Mods/ScheduleOne-Inkorporated)
+> real menu rig, and export a complete, ready-to-publish [Inkorporated](https://www.nexusmods.com/schedule1/mods/2214)
 > tattoo mod - manifest, license and a resized icon included. Built on
 > [S1API](https://github.com/ifBars/S1API) and launched through the
-> [Side Hustle](https://github.com/DooDesch-Mods/ScheduleOne-SideHustle) hub.
+> [Side Hustle](https://www.nexusmods.com/schedule1/mods/2232) hub.
 
 ![Version](https://img.shields.io/badge/version-1.0.4-blue)
 ![Game](https://img.shields.io/badge/game-Schedule%20I-purple)
@@ -37,15 +39,22 @@
 | Schedule I | IL2CPP, current Steam public build |
 | MelonLoader | 0.7.3+ |
 | S1API | [ifBars/S1API_Forked](https://github.com/ifBars/S1API) (pulled in as a dependency) |
-| Side Hustle | [DooDesch-Mods/Side Hustle](https://github.com/DooDesch-Mods/ScheduleOne-SideHustle) - the main-menu hub Inkubator launches from |
-| Inkorporated | [DooDesch-Mods/Inkorporated](https://github.com/DooDesch-Mods/ScheduleOne-Inkorporated) - only needed to *use* the packs you export, not to run the editor |
+| Side Hustle | [Side Hustle](https://www.nexusmods.com/schedule1/mods/2232) - the main-menu hub Inkubator launches from |
+| Inkorporated | [Inkorporated](https://www.nexusmods.com/schedule1/mods/2214) - only needed to *use* the packs you export, not to run the editor |
 
 ## Installation
 
-### Recommended: a Thunderstore mod manager
+### Recommended: Nexus Mods
+
+1. Install **MelonLoader 0.7.3+** for Schedule I ([melonwiki.xyz](https://melonwiki.xyz/)).
+2. Download Inkubator from [Nexus Mods](https://www.nexusmods.com/schedule1/mods/2233) and install it with Vortex,
+   or put **`Inkubator.dll`** into your Schedule I `Mods/` folder and `SixLabors.ImageSharp.dll` into `UserLibs/`.
+3. Get S1API ([Nexus page](https://www.nexusmods.com/schedule1/mods/1194)) and Side Hustle ([Nexus page](https://www.nexusmods.com/schedule1/mods/2232)) the same way.
+
+### Thunderstore mod manager
 
 Install with a Schedule I mod manager (Thunderstore Mod Manager, r2modman or Gale). It pulls in MelonLoader,
-S1API and Side Hustle automatically.
+S1API and Side Hustle automatically. The [Thunderstore page](https://thunderstore.io/c/schedule-i/p/DooDesch/Inkubator/) has the package.
 
 ### Manual
 
@@ -78,8 +87,8 @@ active game.
 
 - DooDesch - mod author.
 - Built on [S1API](https://github.com/ifBars/S1API) by ifBars.
-- Launched through the [Side Hustle](https://github.com/DooDesch-Mods/ScheduleOne-SideHustle) hub.
-- Exports packs for [Inkorporated](https://github.com/DooDesch-Mods/ScheduleOne-Inkorporated).
+- Launched through the [Side Hustle](https://www.nexusmods.com/schedule1/mods/2232) hub.
+- Exports packs for [Inkorporated](https://www.nexusmods.com/schedule1/mods/2214).
 - UI icons from [Lucide](https://lucide.dev) (ISC).
 
 ## License
